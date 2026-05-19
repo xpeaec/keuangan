@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Catatan Keuangan Bulanan</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0c0e14;
+  --surface: #13161f;
+  --card: #191c28;
+  --border: #252940;
+  --hover: #1e2235;
+  --text: #dde1f0;
+  --muted: #5a607a;
+  --green: #2dd98f;
+  --red: #ff5c7a;
+  --blue: #4d9fff;
+  --gold: #ffb830;
+  --purple: #9b7ff4;
+  --teal: #2dd9c8;
+  --accent: #5b6cf9;
+  --r: 10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+button{cursor:pointer;font-family:inherit}
+input,select,textarea{font-family:inherit}
+
+/* ── SIDEBAR ── */
+.layout{display:flex;min-height:100vh}
+.sidebar{width:220px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sidebar-logo{padding:20px 16px 12px;border-bottom:1px solid var(--border)}
+.logo-mark{font-size:22px}
+.logo-title{font-size:15px;font-weight:700;margin-top:4px}
+.logo-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.sidebar-section{padding:12px 8px 4px;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:600}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;margin:1px 6px;cursor:pointer;transition:background .15s,color .15s;color:var(--muted);font-size:13px;font-weight:500;border:none;background:none;width:calc(100% - 12px);text-align:left}
+.nav-item:hover{background:var(--hover);color:var(--text)}
+.nav-item.active{background:var(--accent);color:#fff}
+.nav-icon{font-size:16px;width:20px;text-align:center;flex-shrink:0}
+.sidebar-bottom{margin-top:auto;padding:12px 8px;border-top:1px solid var(--border)}
+
+/* ── MAIN ── */
+.main{flex:1;overflow:hidden}
+.topbar{height:54px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:var(--surface);position:sticky;top:0;z-index:50}
+.topbar-title{font-size:16px;font-weight:700}
+.topbar-period{font-family:'Fira Code',monospace;font-size:12px;color:var(--muted);background:var(--card);border:1px solid var(--border);padding:4px 10px;border-radius:6px}
+.content{padding:24px;max-width:1100px}
+.page{display:none}.page.active{display:block;animation:fadeUp .25s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── TITLES ── */
+.page-title{font-size:22px;font-weight:700;margin-bottom:4px}
+.page-sub{color:var(--muted);font-size:13px;margin-bottom:20px}
+
+/* ── KPI ROW ── */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;position:relative;overflow:hidden}
+.kpi::after{content:'';position:absolute;top:0;left:0;width:3px;height:100%}
+.kpi.g::after{background:var(--green)}.kpi.r::after{background:var(--red)}.kpi.gold::after{background:var(--gold)}.kpi.b::after{background:var(--blue)}.kpi.p::after{background:var(--purple)}.kpi.t::after{background:var(--teal)}
+.kpi-label{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:6px}
+.kpi-val{font-family:'Fira Code',monospace;font-size:18px;font-weight:500}
+.kpi-note{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:16px}
+.card-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.card-title{font-size:14px;font-weight:600}
+.card-body{padding:16px 18px}
+
+/* ── FORM ── */
+.form-grid{display:grid;gap:12px}
+.form-grid.g2{grid-template-columns:1fr 1fr}
+.form-grid.g3{grid-template-columns:1fr 1fr 1fr}
+.form-grid.g4{grid-template-columns:1fr 1fr 1fr 1fr}
+@media(max-width:700px){.form-grid.g2,.form-grid.g3,.form-grid.g4{grid-template-columns:1fr}}
+label.field{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted);font-weight:500}
+.field input,.field select,.field textarea{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:9px 11px;color:var(--text);font-size:13px;outline:none;transition:border .15s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent)}
+.field select option{background:var(--surface)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:7px;font-size:13px;font-weight:600;border:none;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-danger{background:rgba(255,92,122,.15);color:var(--red);border:1px solid rgba(255,92,122,.3)}
+.btn-success{background:rgba(45,217,143,.15);color:var(--green);border:1px solid rgba(45,217,143,.3)}
+.btn-sm{padding:5px 12px;font-size:12px}
+.form-row-btn{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
+
+/* ── TABLE ── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:10px 12px;text-align:left;background:var(--hover);font-weight:600;white-space:nowrap}
+th:first-child{border-radius:8px 0 0 8px}th:last-child{border-radius:0 8px 8px 0}
+td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--hover)}
+td.num{text-align:right;font-family:'Fira Code',monospace;font-size:12px}
+td.pos{color:var(--green)}td.neg{color:var(--red)}
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-out{background:rgba(255,92,122,.15);color:var(--red)}
+.badge-in{background:rgba(45,217,143,.15);color:var(--green)}
+.badge-valas{background:rgba(255,184,48,.15);color:var(--gold)}
+.badge-hutang{background:rgba(155,127,244,.15);color:var(--purple)}
+
+/* ── DONUT ── */
+.donut-wrap{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.donut-svg{width:140px;height:140px;flex-shrink:0}
+.donut-items{flex:1;display:flex;flex-direction:column;gap:7px}
+.donut-item{display:flex;align-items:center;gap:8px;font-size:12px}
+.donut-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.donut-name{flex:1;color:var(--muted)}
+.donut-amt{font-family:'Fira Code',monospace;font-size:11px}
+
+/* ── PROGRESS ── */
+.prog-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;transition:width .4s ease}
+
+/* ── REKENING ── */
+.rek-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.rek-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;text-align:center}
+.rek-name{font-size:12px;color:var(--muted);margin-bottom:6px}
+.rek-saldo{font-family:'Fira Code',monospace;font-size:14px;font-weight:600}
+.rek-note{font-size:10px;color:var(--muted);margin-top:4px}
+
+/* ── AKUN FORM ROWS ── */
+.akun-row{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.akun-row:last-child{border-bottom:none}
+.akun-row .field{flex:1;margin:0}
+
+/* ── ALERT ── */
+.alert{padding:10px 14px;border-radius:8px;font-size:12px;margin-bottom:12px}
+.alert-success{background:rgba(45,217,143,.1);border:1px solid rgba(45,217,143,.3);color:var(--green)}
+.alert-info{background:rgba(77,159,255,.1);border:1px solid rgba(77,159,255,.3);color:var(--blue)}
+.alert-warn{background:rgba(255,184,48,.1);border:1px solid rgba(255,184,48,.3);color:var(--gold)}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:32px;color:var(--muted);font-size:13px}
+.empty-icon{font-size:32px;margin-bottom:8px}
+
+/* ── SALDO TOTAL BIG ── */
+.saldo-big{background:linear-gradient(135deg,rgba(91,108,249,.2),rgba(155,127,244,.1));border:1px solid rgba(91,108,249,.3);border-radius:var(--r);padding:20px 24px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.saldo-big-label{font-size:12px;color:var(--muted);margin-bottom:4px}
+.saldo-big-val{font-family:'Fira Code',monospace;font-size:28px;font-weight:700;color:var(--accent)}
+.saldo-big-period{font-size:11px;color:var(--muted);background:var(--card);padding:4px 10px;border-radius:5px}
+
+/* ── HUTANG ITEM ── */
+.hutang-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px;position:relative}
+.hutang-item-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:10px}
+.hutang-item-name{font-weight:600;font-size:14px}
+.hutang-progress-bar{height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin:8px 0 4px}
+.hutang-progress-fill{height:100%;border-radius:4px;background:var(--red);transition:width .4s}
+.hutang-stats{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px}
+.hutang-stat{font-size:12px;color:var(--muted)}
+.hutang-stat span{color:var(--text);font-family:'Fira Code',monospace;font-weight:600}
+
+/* ── VALAS ── */
+.valas-item{background:linear-gradient(135deg,rgba(255,184,48,.05),rgba(255,184,48,.02));border:1px solid rgba(255,184,48,.2);border-radius:var(--r);padding:16px;margin-bottom:12px}
+.valas-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.valas-flag{font-size:22px}
+.valas-name{font-weight:600;font-size:14px;color:var(--gold)}
+.valas-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+
+/* ── INFO BOX ── */
+.info-box{background:rgba(77,159,255,.07);border:1px solid rgba(77,159,255,.2);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--blue);margin-bottom:14px;display:flex;align-items:flex-start;gap:8px}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">💰</div>
+    <div class="logo-title">Keuangan</div>
+    <div class="logo-sub" id="sb-period">Januari 2025</div>
+  </div>
+  <div class="sidebar-section">Menu</div>
+  <button class="nav-item active" onclick="goto('dashboard')"><span class="nav-icon">📊</span> Dashboard</button>
+  <button class="nav-item" onclick="goto('harian')"><span class="nav-icon">📅</span> Transaksi Harian</button>
+  <button class="nav-item" onclick="goto('pemasukan')"><span class="nav-icon">📥</span> Pemasukan</button>
+  <button class="nav-item" onclick="goto('pengeluaran')"><span class="nav-icon">📤</span> Pengeluaran</button>
+  <div class="sidebar-section">Keuangan</div>
+  <button class="nav-item" onclick="goto('tabungan')"><span class="nav-icon">🏦</span> Tabungan</button>
+  <button class="nav-item" onclick="goto('valas')"><span class="nav-icon">💵</span> Tabungan Valas</button>
+  <button class="nav-item" onclick="goto('investasi')"><span class="nav-icon">📈</span> Investasi</button>
+  <button class="nav-item" onclick="goto('hutang')"><span class="nav-icon">💳</span> Hutang & Cicilan</button>
+  <button class="nav-item" onclick="goto('akun')"><span class="nav-icon">🏧</span> Akun & Rekening</button>
+  <div class="sidebar-bottom">
+    <button class="nav-item" onclick="goto('pengaturan')" style="margin:0;width:100%"><span class="nav-icon">⚙️</span> Pengaturan</button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+<div class="topbar">
+  <div class="topbar-title" id="topbar-title">Dashboard</div>
+  <div class="topbar-period" id="topbar-period">Jan 2025</div>
+</div>
+<div class="content">
+
+<!-- ════════ DASHBOARD ════════ -->
+<div class="page active" id="page-dashboard">
+  <div class="page-title">Ringkasan Keuangan</div>
+  <div class="page-sub" id="dash-period-sub">Periode Januari 2025</div>
+  <div class="saldo-big">
+    <div>
+      <div class="saldo-big-label">Saldo Bersih Bulan Ini</div>
+      <div class="saldo-big-val" id="d-saldo-bersih">Rp 0</div>
+    </div>
+    <div class="saldo-big-period" id="d-saldo-period">Jan 2025</div>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi g"><div class="kpi-label">Total Pemasukan</div><div class="kpi-val" id="d-masuk">Rp 0</div><div class="kpi-note" id="d-masuk-n">0 transaksi</div></div>
+    <div class="kpi r"><div class="kpi-label">Total Pengeluaran</div><div class="kpi-val" id="d-keluar">Rp 0</div><div class="kpi-note" id="d-keluar-n">0 transaksi</div></div>
+    <div class="kpi gold"><div class="kpi-label">Saldo Semua Akun</div><div class="kpi-val" id="d-saldo-akun">Rp 0</div><div class="kpi-note">total rekening</div></div>
+    <div class="kpi p"><div class="kpi-label">Total Hutang</div><div class="kpi-val" id="d-hutang">Rp 0</div><div class="kpi-note">sisa belum lunas</div></div>
+    <div class="kpi t"><div class="kpi-label">Tabungan Valas</div><div class="kpi-val" id="d-valas">Rp 0</div><div class="kpi-note">estimasi IDR</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:14px" id="dash-chart-grid">
+    <div class="card">
+      <div class="card-head"><span class="card-title">Pengeluaran per Kategori</span></div>
+      <div class="card-body">
+        <div class="donut-wrap">
+          <svg class="donut-svg" id="d-donut" viewBox="0 0 140 140"></svg>
+          <div class="donut-items" id="d-donut-legend"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">Saldo Rekening</span></div>
+      <div class="card-body" id="d-rek-list"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="card-title">Transaksi Terbaru</span></div>
+    <div class="card-body">
+      <div class="tbl-wrap"><table><thead><tr><th>Tgl</th><th>Keterangan</th><th>Kategori</th><th>Akun</th><th class="num">Nominal</th></tr></thead>
+      <tbody id="d-recent"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ TRANSAKSI HARIAN ════════ -->
+<div class="page" id="page-harian">
+  <div class="page-title">Transaksi Harian</div>
+  <div class="page-sub">Catat setiap pemasukan & pengeluaran</div>
+  <div class="card">
+    <div class="card-head"><span class="card-title">✏️ Tambah Transaksi</span></div>
+    <div class="card-body">
+      <div class="form-grid g3">
+        <label class="field">Tanggal<input type="date" id="f-tgl"/></label>
+        <label class="field">Jenis
+          <select id="f-jenis" onchange="populateFormDropdowns()">
+            <option value="Keluar">📤 Pengeluaran (Keluar)</option>
+            <option value="Masuk">📥 Pemasukan (Masuk)</option>
+          </select>
+        </label>
+        <label class="field">Nominal (Rp)<input type="number" id="f-nominal" placeholder="0" min="0"/></label>
+      </div>
+      <div class="form-grid g3" style="margin-top:12px">
+        <label class="field">Kategori<select id="f-kategori" onchange="updateSubKat()"></select></label>
+        <label class="field">Sub Kategori<select id="f-subkategori"></select></label>
+        <label class="field">Metode Bayar
+          <select id="f-metode">
+            <option>Transfer Bank</option><option>QRIS</option><option>Cash</option>
+            <option>Kartu Debit</option><option>Kartu Kredit</option>
+            <option>GoPay</option><option>OVO</option><option>DANA</option><option>ShopeePay</option>
+          </select>
+        </label>
+      </div>
+      <div class="form-grid g2" style="margin-top:12px">
+        <label class="field">Akun / Rekening<select id="f-akun"></select></label>
+        <label class="field">Catatan<input type="text" id="f-catatan" placeholder="Opsional..."/></label>
+      </div>
+      <div class="form-row-btn" style="margin-top:14px">
+        <button class="btn btn-primary" onclick="tambahTransaksi()">➕ Tambah Transaksi</button>
+      </div>
+      <div id="h-alert" style="margin-top:10px"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">Daftar Transaksi</span>
+      <div style="display:flex;gap:8px">
+        <select id="filter-jenis" onchange="renderTransaksi()" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:5px 10px;border-radius:6px;font-size:12px">
+          <option value="">Semua</option><option value="Masuk">Masuk</option><option value="Keluar">Keluar</option>
+        </select>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>No</th><th>Tgl</th><th>Jenis</th><th>Kategori</th><th>Sub Kategori</th><th>Metode</th><th>Akun</th><th>Catatan</th><th class="num">Nominal</th><th></th></tr></thead>
+        <tbody id="tbl-transaksi"></tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ PEMASUKAN ════════ -->
+<div class="page" id="page-pemasukan">
+  <div class="page-title">Rincian Pemasukan</div>
+  <div class="page-sub">Anggaran & realisasi sumber pendapatan</div>
+  <div class="card">
+    <div class="card-head"><span class="card-title">Input Anggaran Pemasukan</span></div>
+    <div class="card-body">
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Sumber Pemasukan</th><th class="num">Anggaran (Rp)</th><th class="num">Realisasi (Rp)</th><th class="num">Selisih</th><th>Catatan</th></tr></thead>
+        <tbody id="tbl-pemasukan"></tbody>
+      </table></div>
+      <div class="form-row-btn" style="margin-top:12px">
+        <button class="btn btn-primary" onclick="simpanPemasukan()">💾 Simpan Anggaran</button>
+      </div>
+      <div id="p-alert" style="margin-top:8px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ PENGELUARAN ════════ -->
+<div class="page" id="page-pengeluaran">
+  <div class="page-title">Rincian Pengeluaran</div>
+  <div class="page-sub">Anggaran & realisasi per kategori</div>
+  <div class="card">
+    <div class="card-head"><span class="card-title">Anggaran Pengeluaran</span></div>
+    <div class="card-body">
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Kategori / Item</th><th class="num">Anggaran (Rp)</th><th class="num">Realisasi (Rp)</th><th class="num">Selisih</th><th style="min-width:120px">Progress</th></tr></thead>
+        <tbody id="tbl-pengeluaran"></tbody>
+      </table></div>
+      <div class="form-row-btn" style="margin-top:12px">
+        <button class="btn btn-primary" onclick="simpanPengeluaran()">💾 Simpan Anggaran</button>
+      </div>
+      <div id="pe-alert" style="margin-top:8px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ TABUNGAN ════════ -->
+<div class="page" id="page-tabungan">
+  <div class="page-title">Catatan Tabungan</div>
+  <div class="page-sub">Rencana & realisasi tabungan bulanan</div>
+  <div class="card">
+    <div class="card-head"><span class="card-title">Input Tabungan</span></div>
+    <div class="card-body">
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Jenis Tabungan</th><th class="num">Anggaran/bln</th><th class="num">Realisasi</th><th class="num">Akumulatif</th><th class="num">Target</th><th>Bank/Ket</th></tr></thead>
+        <tbody id="tbl-tabungan"></tbody>
+      </table></div>
+      <div class="form-row-btn" style="margin-top:12px">
+        <button class="btn btn-primary" onclick="simpanTabungan()">💾 Simpan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ TABUNGAN VALAS ════════ -->
+<div class="page" id="page-valas">
+  <div class="page-title">Tabungan Valas BCA</div>
+  <div class="page-sub">Catatan tabungan valuta asing di BCA mBanking — otomatis tercatat di Transaksi Harian</div>
+
+  <div class="info-box">
+    ℹ️ Setiap kali kamu input "Setor" (beli valas) atau "Tarik" (jual valas), transaksi otomatis tercatat di halaman Transaksi Harian sebagai keluar/masuk dari akun BCA.
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi gold"><div class="kpi-label">Total Nilai IDR</div><div class="kpi-val" id="v-total-idr">Rp 0</div><div class="kpi-note">semua valas</div></div>
+    <div class="kpi b"><div class="kpi-label">USD</div><div class="kpi-val" id="v-usd-val">$ 0.00</div><div class="kpi-note" id="v-usd-idr">≈ Rp 0</div></div>
+    <div class="kpi p"><div class="kpi-label">MYR</div><div class="kpi-val" id="v-myr-val">RM 0.00</div><div class="kpi-note" id="v-myr-idr">≈ Rp 0</div></div>
+    <div class="kpi t"><div class="kpi-label">Valas Lainnya</div><div class="kpi-val" id="v-lain-val">Rp 0</div><div class="kpi-note">estimasi IDR</div></div>
+  </div>
+
+  <!-- Form tambah transaksi valas -->
+  <div class="card">
+    <div class="card-head"><span class="card-title">➕ Catat Transaksi Valas</span></div>
+    <div class="card-body">
+      <div class="form-grid g4">
+        <label class="field">Tanggal<input type="date" id="vf-tgl"/></label>
+        <label class="field">Mata Uang
+          <select id="vf-currency">
+            <option value="USD">🇺🇸 USD – Dollar AS</option>
+            <option value="MYR">🇲🇾 MYR – Ringgit Malaysia</option>
+            <option value="SGD">🇸🇬 SGD – Dollar Singapura</option>
+            <option value="EUR">🇪🇺 EUR – Euro</option>
+            <option value="JPY">🇯🇵 JPY – Yen Jepang</option>
+            <option value="GBP">🇬🇧 GBP – Pound Sterling</option>
+            <option value="AUD">🇦🇺 AUD – Dollar Australia</option>
+            <option value="CNY">🇨🇳 CNY – Yuan China</option>
+            <option value="SAR">🇸🇦 SAR – Riyal Arab Saudi</option>
+            <option value="Other">🌐 Lainnya</option>
+          </select>
+        </label>
+        <label class="field">Jenis
+          <select id="vf-jenis">
+            <option value="Setor">💰 Setor (Beli Valas)</option>
+            <option value="Tarik">💸 Tarik (Jual Valas)</option>
+          </select>
+        </label>
+        <label class="field">Jumlah (nominal valas)<input type="number" id="vf-jumlah" placeholder="0.00" min="0" step="0.01"/></label>
+      </div>
+      <div class="form-grid g3" style="margin-top:12px">
+        <label class="field">Kurs (1 valas = Rp)<input type="number" id="vf-kurs" placeholder="contoh: 16300 untuk USD" min="0"/></label>
+        <label class="field">Nilai IDR (otomatis / bisa edit)<input type="number" id="vf-idr" placeholder="0" min="0"/></label>
+        <label class="field">Catatan<input type="text" id="vf-catatan" placeholder="Opsional..."/></label>
+      </div>
+      <div class="form-row-btn" style="margin-top:14px">
+        <button class="btn btn-primary" onclick="tambahValas()">➕ Catat Transaksi Valas</button>
+      </div>
+      <div id="vf-alert" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <!-- Update kurs -->
+  <div class="card">
+    <div class="card-head"><span class="card-title">⚙️ Kurs Referensi (untuk estimasi nilai)</span></div>
+    <div class="card-body">
+      <div class="form-grid g4" id="kurs-form"></div>
+      <div class="form-row-btn" style="margin-top:12px">
+        <button class="btn btn-primary" onclick="simpanKurs()">💾 Simpan Kurs</button>
+      </div>
+      <div id="kurs-alert" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+  <!-- Riwayat transaksi valas -->
+  <div class="card">
+    <div class="card-head"><span class="card-title">Riwayat Transaksi Valas</span></div>
+    <div class="card-body">
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Tgl</th><th>Mata Uang</th><th>Jenis</th><th class="num">Jumlah Valas</th><th class="num">Kurs</th><th class="num">Nilai IDR</th><th>Catatan</th><th></th></tr></thead>
+        <tbody id="tbl-valas"></tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- Saldo per mata uang -->
+  <div class="card">
+    <div class="card-head"><span class="card-title">📊 Posisi Saldo per Mata Uang</span></div>
+    <div class="card-body" id="valas-saldo-list"></div>
+  </div>
+</div>
+
+<!-- ════════ INVESTASI ════════ -->
+<div class="page" id="page-investasi">
+  <div class="page-title">Catatan Investasi</div>
+  <div class="page-sub">Portofolio & performa investasi</div>
+  <div class="card">
+    <div class="card-head"><span class="card-title">Input Investasi</span></div>
+    <div class="card-body">
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Instrumen</th><th class="num">Modal Awal</th><th class="num">Tambahan Bln Ini</th><th class="num">Nilai Sekarang</th><th class="num">Return (%)</th><th>Platform</th></tr></thead>
+        <tbody id="tbl-investasi"></tbody>
+      </table></div>
+      <div class="form-row-btn" style="margin-top:12px">
+        <button class="btn btn-primary" onclick="simpanInvestasi()">💾 Simpan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ HUTANG & CICILAN ════════ -->
+<div class="page" id="page-hutang">
+  <div class="page-title">Hutang & Cicilan</div>
+  <div class="page-sub">Pantau semua hutang — bisa tambah, bayar, dan hapus</div>
+
+  <div class="info-box">
+    ℹ️ Klik <strong>Catat Pembayaran</strong> pada setiap hutang untuk otomatis mencatat di Transaksi Harian sebagai pengeluaran.
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi r"><div class="kpi-label">Total Hutang Awal</div><div class="kpi-val" id="h-total">Rp 0</div></div>
+    <div class="kpi g"><div class="kpi-label">Sudah Dibayar</div><div class="kpi-val" id="h-bayar">Rp 0</div></div>
+    <div class="kpi gold"><div class="kpi-label">Sisa Hutang</div><div class="kpi-val" id="h-sisa">Rp 0</div></div>
+    <div class="kpi b"><div class="kpi-label">Jumlah Hutang</div><div class="kpi-val" id="h-count">0</div><div class="kpi-note">aktif</div></div>
+  </div>
+
+  <!-- Form tambah hutang baru -->
+  <div class="card">
+    <div class="card-head"><span class="card-title">➕ Tambah Hutang Baru</span></div>
+    <div class="card-body">
+      <div class="form-grid g3">
+        <label class="field">Nama Hutang<input type="text" id="hf-nama" placeholder="contoh: KPR BCA, Hutang ke Budi..."/></label>
+        <label class="field">Total Hutang Awal (Rp)<input type="number" id="hf-total" placeholder="0" min="0"/></label>
+        <label class="field">Cicilan / Anggaran Bayar / Bln (Rp)<input type="number" id="hf-cicilan" placeholder="0" min="0"/></label>
+      </div>
+      <div class="form-grid g3" style="margin-top:12px">
+        <label class="field">Bunga % / Tahun<input type="number" id="hf-bunga" placeholder="0" min="0" step="0.1"/></label>
+        <label class="field">Akun Bayar (debit dari rekening mana)
+          <select id="hf-akun"></select>
+        </label>
+        <label class="field">Keterangan<input type="text" id="hf-ket" placeholder="Bank, tenor, dll..."/></label>
+      </div>
+      <div class="form-row-btn" style="margin-top:14px">
+        <button class="btn btn-primary" onclick="tambahHutang()">➕ Tambah Hutang</button>
+      </div>
+      <div id="hf-alert" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <!-- Daftar hutang -->
+  <div id="hutang-list"></div>
+
+  <!-- Modal bayar hutang -->
+  <div id="bayar-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px;width:90%;max-width:420px">
+      <div style="font-weight:700;font-size:16px;margin-bottom:16px">💸 Catat Pembayaran Hutang</div>
+      <div id="bayar-nama" style="color:var(--muted);font-size:13px;margin-bottom:14px"></div>
+      <div class="form-grid" style="gap:12px">
+        <label class="field">Tanggal Bayar<input type="date" id="bm-tgl"/></label>
+        <label class="field">Jumlah Bayar (Rp)<input type="number" id="bm-nominal" placeholder="0" min="0"/></label>
+        <label class="field">Akun / Rekening Debit<select id="bm-akun"></select></label>
+        <label class="field">Catatan<input type="text" id="bm-catatan" placeholder="Opsional..."/></label>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
+        <button class="btn btn-danger" onclick="tutupModalBayar()">Batal</button>
+        <button class="btn btn-primary" onclick="konfirmasiBayar()">✅ Catat Pembayaran</button>
+      </div>
+      <div id="bm-alert" style="margin-top:8px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ AKUN & REKENING ════════ -->
+<div class="page" id="page-akun">
+  <div class="page-title">Akun & Rekening</div>
+  <div class="page-sub">Saldo terhitung otomatis dari transaksi harian</div>
+  <div class="rek-grid" id="rek-grid" style="margin-bottom:16px"></div>
+  <div class="card">
+    <div class="card-head"><span class="card-title">Saldo Awal Rekening</span></div>
+    <div class="card-body">
+      <div id="akun-form-rows"></div>
+      <div class="form-row-btn" style="margin-top:12px">
+        <button class="btn btn-primary" onclick="simpanAkun()">💾 Simpan Saldo Awal</button>
+      </div>
+      <div id="a-alert" style="margin-top:8px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ PENGATURAN ════════ -->
+<div class="page" id="page-pengaturan">
+  <div class="page-title">Pengaturan</div>
+  <div class="page-sub">Konfigurasi periode dan nama laporan</div>
+  <div class="card">
+    <div class="card-head"><span class="card-title">Periode Laporan</span></div>
+    <div class="card-body">
+      <div class="form-grid g3">
+        <label class="field">Bulan
+          <select id="s-bulan">
+            <option>Januari</option><option>Februari</option><option>Maret</option><option>April</option>
+            <option>Mei</option><option>Juni</option><option>Juli</option><option>Agustus</option>
+            <option>September</option><option>Oktober</option><option>November</option><option>Desember</option>
+          </select>
+        </label>
+        <label class="field">Tahun<input type="number" id="s-tahun" value="2025" min="2020" max="2050"/></label>
+        <label class="field">Nama Laporan<input type="text" id="s-nama" value="Catatan Keuangan Saya"/></label>
+      </div>
+      <div class="form-row-btn" style="margin-top:14px">
+        <button class="btn btn-primary" onclick="simpanPengaturan()">💾 Simpan</button>
+      </div>
+      <div id="s-alert" style="margin-top:8px"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><span class="card-title">Data</span></div>
+    <div class="card-body">
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="exportData()">📤 Export Data (JSON)</button>
+        <button class="btn btn-danger" onclick="resetData()">🗑️ Reset Semua Data</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /layout -->
+
+<script>
+// ══════════════════════════════════
+// DATA & STORAGE
+// ══════════════════════════════════
+const STORE_KEY = 'fin_app_v1';
+
+const DEFAULT = {
+  pengaturan: { bulan: 'Januari', tahun: 2025, nama: 'Catatan Keuangan Saya' },
+  akun: [
+    { nama:'Cash', saldoAwal:0 },
+    { nama:'BRI', saldoAwal:0 },
+    { nama:'BCA', saldoAwal:0 },
+    { nama:'Blu Digital', saldoAwal:0 },
+    { nama:'GoPay', saldoAwal:0 },
+    { nama:'OVO', saldoAwal:0 },
+    { nama:'DANA', saldoAwal:0 },
+    { nama:'ShopeePay', saldoAwal:0 },
+  ],
+  transaksi: [],
+  pemasukan: [
+    { sumber:'Gaji Pokok / Salary', anggaran:0, catatan:'' },
+    { sumber:'Tunjangan Transportasi', anggaran:0, catatan:'' },
+    { sumber:'Tunjangan Makan', anggaran:0, catatan:'' },
+    { sumber:'Tunjangan Lainnya', anggaran:0, catatan:'' },
+    { sumber:'Bonus / THR', anggaran:0, catatan:'' },
+    { sumber:'Pendapatan Freelance / Sampingan', anggaran:0, catatan:'' },
+    { sumber:'Pendapatan Bisnis', anggaran:0, catatan:'' },
+    { sumber:'Bagi Hasil / Dividen', anggaran:0, catatan:'' },
+    { sumber:'Bunga Tabungan / Deposito', anggaran:0, catatan:'' },
+    { sumber:'Penjualan Aset', anggaran:0, catatan:'' },
+    { sumber:'Transfer / Kiriman Uang', anggaran:0, catatan:'' },
+    { sumber:'Pengembalian Dana (Refund)', anggaran:0, catatan:'' },
+    { sumber:'Pendapatan Sewa', anggaran:0, catatan:'' },
+    { sumber:'Lainnya 1', anggaran:0, catatan:'' },
+    { sumber:'Lainnya 2', anggaran:0, catatan:'' },
+  ],
+  pengeluaran: [
+    { kat:'🍽️ MAKANAN & MINUMAN', item:'Belanja Bahan Makanan / Grocery', anggaran:0 },
+    { kat:'🍽️ MAKANAN & MINUMAN', item:'Makan di Luar / Restoran', anggaran:0 },
+    { kat:'🍽️ MAKANAN & MINUMAN', item:'Kopi & Minuman', anggaran:0 },
+    { kat:'🍽️ MAKANAN & MINUMAN', item:'Snack & Jajanan', anggaran:0 },
+    { kat:'🍽️ MAKANAN & MINUMAN', item:'Delivery / GoFood / GrabFood', anggaran:0 },
+    { kat:'🚗 TRANSPORTASI', item:'Bensin / BBM', anggaran:0 },
+    { kat:'🚗 TRANSPORTASI', item:'Ojek Online / Taksi', anggaran:0 },
+    { kat:'🚗 TRANSPORTASI', item:'Parkir & Tol', anggaran:0 },
+    { kat:'🚗 TRANSPORTASI', item:'Servis Kendaraan', anggaran:0 },
+    { kat:'🚗 TRANSPORTASI', item:'Transportasi Umum', anggaran:0 },
+    { kat:'🏠 RUMAH & UTILITAS', item:'Sewa / Cicilan KPR', anggaran:0 },
+    { kat:'🏠 RUMAH & UTILITAS', item:'Listrik', anggaran:0 },
+    { kat:'🏠 RUMAH & UTILITAS', item:'Air (PDAM)', anggaran:0 },
+    { kat:'🏠 RUMAH & UTILITAS', item:'Gas / LPG', anggaran:0 },
+    { kat:'🏠 RUMAH & UTILITAS', item:'Internet', anggaran:0 },
+    { kat:'🏠 RUMAH & UTILITAS', item:'Pembantu / ART', anggaran:0 },
+    { kat:'📱 KOMUNIKASI', item:'Pulsa / Paket Data', anggaran:0 },
+    { kat:'📱 KOMUNIKASI', item:'Telepon Rumah / Wifi', anggaran:0 },
+    { kat:'📱 KOMUNIKASI', item:'Langganan Streaming', anggaran:0 },
+    { kat:'🛒 BELANJA KEBUTUHAN', item:'Sabun, Shampo, Toiletries', anggaran:0 },
+    { kat:'🛒 BELANJA KEBUTUHAN', item:'Perlengkapan Rumah', anggaran:0 },
+    { kat:'🛒 BELANJA KEBUTUHAN', item:'Pakaian & Alas Kaki', anggaran:0 },
+    { kat:'🛒 BELANJA KEBUTUHAN', item:'Perawatan Diri (Salon/Spa)', anggaran:0 },
+    { kat:'❤️ KESEHATAN', item:'Dokter / Konsultasi', anggaran:0 },
+    { kat:'❤️ KESEHATAN', item:'Obat-obatan', anggaran:0 },
+    { kat:'❤️ KESEHATAN', item:'Suplemen / Vitamin', anggaran:0 },
+    { kat:'❤️ KESEHATAN', item:'Gym / Olahraga', anggaran:0 },
+    { kat:'🎓 PENDIDIKAN', item:'SPP / Sekolah / Kuliah', anggaran:0 },
+    { kat:'🎓 PENDIDIKAN', item:'Kursus / Les / Pelatihan', anggaran:0 },
+    { kat:'🎓 PENDIDIKAN', item:'Buku & Alat Tulis', anggaran:0 },
+    { kat:'🎉 HIBURAN & REKREASI', item:'Bioskop / Konser', anggaran:0 },
+    { kat:'🎉 HIBURAN & REKREASI', item:'Liburan / Wisata', anggaran:0 },
+    { kat:'🎉 HIBURAN & REKREASI', item:'Hobi', anggaran:0 },
+    { kat:'🎉 HIBURAN & REKREASI', item:'Langganan Apps/Games', anggaran:0 },
+    { kat:'🤝 SOSIAL & SUMBANGAN', item:'Arisan', anggaran:0 },
+    { kat:'🤝 SOSIAL & SUMBANGAN', item:'Sumbangan / Donasi / Infak', anggaran:0 },
+    { kat:'🤝 SOSIAL & SUMBANGAN', item:'Hadiah / Kado', anggaran:0 },
+    { kat:'🤝 SOSIAL & SUMBANGAN', item:'Acara Keluarga', anggaran:0 },
+    { kat:'🔧 LAINNYA', item:'Tak Terduga / Emergency', anggaran:0 },
+    { kat:'🔧 LAINNYA', item:'Lainnya 1', anggaran:0 },
+    { kat:'🔧 LAINNYA', item:'Lainnya 2', anggaran:0 },
+  ],
+  tabungan: [
+    { jenis:'Dana Darurat (3-6x Pengeluaran)', anggaran:0, realisasi:0, akumulatif:0, target:0, ket:'' },
+    { jenis:'Tabungan Rutin Bulanan', anggaran:0, realisasi:0, akumulatif:0, target:0, ket:'' },
+    { jenis:'Tabungan Liburan / Wisata', anggaran:0, realisasi:0, akumulatif:0, target:0, ket:'' },
+    { jenis:'Tabungan Pendidikan Anak', anggaran:0, realisasi:0, akumulatif:0, target:0, ket:'' },
+    { jenis:'Tabungan Pernikahan', anggaran:0, realisasi:0, akumulatif:0, target:0, ket:'' },
+    { jenis:'Tabungan Beli Rumah / DP', anggaran:0, realisasi:0, akumulatif:0, target:0, ket:'' },
+    { jenis:'Tabungan Hari Tua / Pensiun', anggaran:0, realisasi:0, akumulatif:0, target:0, ket:'' },
+    { jenis:'Deposito', anggaran:0, realisasi:0, akumulatif:0, target:0, ket:'' },
+  ],
+  investasi: [
+    { instrumen:'Reksa Dana Pasar Uang', modal:0, tambahan:0, nilaiSkrg:0, platform:'' },
+    { instrumen:'Reksa Dana Pendapatan Tetap', modal:0, tambahan:0, nilaiSkrg:0, platform:'' },
+    { instrumen:'Reksa Dana Saham', modal:0, tambahan:0, nilaiSkrg:0, platform:'' },
+    { instrumen:'Saham', modal:0, tambahan:0, nilaiSkrg:0, platform:'' },
+    { instrumen:'Obligasi / ORI / Sukuk', modal:0, tambahan:0, nilaiSkrg:0, platform:'' },
+    { instrumen:'Emas / Logam Mulia', modal:0, tambahan:0, nilaiSkrg:0, platform:'' },
+    { instrumen:'Kripto / Aset Digital', modal:0, tambahan:0, nilaiSkrg:0, platform:'' },
+    { instrumen:'P2P Lending', modal:0, tambahan:0, nilaiSkrg:0, platform:'' },
+    { instrumen:'Lainnya', modal:0, tambahan:0, nilaiSkrg:0, platform:'' },
+  ],
+  // HUTANG: dinamis, bisa tambah/hapus
+  hutang: [
+    { id:1, nama:'KPR (Kredit Pemilikan Rumah)', total:0, terbayar:0, anggaranBayar:0, bunga:0, akunBayar:'BCA', ket:'' },
+    { id:2, nama:'KKB (Kredit Kendaraan Bermotor)', total:0, terbayar:0, anggaranBayar:0, bunga:0, akunBayar:'BCA', ket:'' },
+    { id:3, nama:'KTA (Kredit Tanpa Agunan)', total:0, terbayar:0, anggaranBayar:0, bunga:0, akunBayar:'BCA', ket:'' },
+    { id:4, nama:'Kartu Kredit 1', total:0, terbayar:0, anggaranBayar:0, bunga:0, akunBayar:'BCA', ket:'' },
+    { id:5, nama:'Kartu Kredit 2', total:0, terbayar:0, anggaranBayar:0, bunga:0, akunBayar:'BCA', ket:'' },
+    { id:6, nama:'Pinjaman Online (Pinjol)', total:0, terbayar:0, anggaranBayar:0, bunga:0, akunBayar:'BCA', ket:'' },
+    { id:7, nama:'Hutang ke Keluarga / Teman', total:0, terbayar:0, anggaranBayar:0, bunga:0, akunBayar:'Cash', ket:'' },
+    { id:8, nama:'Cicilan HP / Elektronik', total:0, terbayar:0, anggaranBayar:0, bunga:0, akunBayar:'BCA', ket:'' },
+    { id:9, nama:'Cicilan Lainnya', total:0, terbayar:0, anggaranBayar:0, bunga:0, akunBayar:'BCA', ket:'' },
+  ],
+  // VALAS: transaksi valas + kurs referensi
+  valasTransaksi: [],
+  valasKurs: {
+    USD: 16300,
+    MYR: 3500,
+    SGD: 12200,
+    EUR: 17800,
+    JPY: 108,
+    GBP: 20900,
+    AUD: 10700,
+    CNY: 2260,
+    SAR: 4350,
+    Other: 1,
+  },
+};
+
+function load() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(STORE_KEY));
+    if (!stored) return JSON.parse(JSON.stringify(DEFAULT));
+    // Merge: pastikan field baru tersedia walau data lama
+    if (!stored.valasTransaksi) stored.valasTransaksi = [];
+    if (!stored.valasKurs) stored.valasKurs = JSON.parse(JSON.stringify(DEFAULT.valasKurs));
+    // Migrate hutang lama ke format baru (realisasiBayar -> terbayar)
+    if (stored.hutang) {
+      stored.hutang = stored.hutang.map(h => {
+        if (h.realisasiBayar !== undefined && h.terbayar === undefined) {
+          h.terbayar = h.realisasiBayar;
+          delete h.realisasiBayar;
+        }
+        if (!h.id) h.id = Date.now() + Math.random();
+        if (!h.akunBayar) h.akunBayar = 'BCA';
+        return h;
+      });
+    }
+    return stored;
+  } catch(e) { return JSON.parse(JSON.stringify(DEFAULT)); }
+}
+
+function save(d) { localStorage.setItem(STORE_KEY, JSON.stringify(d)); }
+
+let DB = load();
+let _bayarHutangId = null; // untuk modal bayar
+
+// ══════════════════════════════════
+// HELPERS
+// ══════════════════════════════════
+const rp = n => 'Rp ' + Math.abs(n).toLocaleString('id-ID');
+const rpFull = n => (n < 0 ? '-' : '') + rp(n);
+
+const CURRENCY_SYMBOL = { USD:'$', MYR:'RM', SGD:'S$', EUR:'€', JPY:'¥', GBP:'£', AUD:'A$', CNY:'¥', SAR:'﷼', Other:'' };
+const CURRENCY_FLAG = { USD:'🇺🇸', MYR:'🇲🇾', SGD:'🇸🇬', EUR:'🇪🇺', JPY:'🇯🇵', GBP:'🇬🇧', AUD:'🇦🇺', CNY:'🇨🇳', SAR:'🇸🇦', Other:'🌐' };
+
+function showAlert(id, msg, type='success') {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+  setTimeout(() => { el.innerHTML = ''; }, 3500);
+}
+
+function akunOptions(selectedVal) {
+  return DB.akun.map(a => `<option value="${a.nama}" ${a.nama===selectedVal?'selected':''}>${a.nama}</option>`).join('');
+}
+
+// ══════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════
+const pageNames = {
+  dashboard:'Dashboard', harian:'Transaksi Harian', pemasukan:'Pemasukan',
+  pengeluaran:'Pengeluaran', tabungan:'Tabungan', valas:'Tabungan Valas',
+  investasi:'Investasi', hutang:'Hutang & Cicilan', akun:'Akun & Rekening', pengaturan:'Pengaturan'
+};
+
+function goto(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'" + page + "'")) n.classList.add('active');
+  });
+  document.getElementById('topbar-title').textContent = pageNames[page] || page;
+  renderPage(page);
+}
+
+function renderPage(p) {
+  if (p === 'dashboard') renderDashboard();
+  else if (p === 'harian') { populateFormDropdowns(); renderTransaksi(); }
+  else if (p === 'pemasukan') renderPemasukan();
+  else if (p === 'pengeluaran') renderPengeluaran();
+  else if (p === 'tabungan') renderTabungan();
+  else if (p === 'valas') renderValas();
+  else if (p === 'investasi') renderInvestasi();
+  else if (p === 'hutang') renderHutang();
+  else if (p === 'akun') renderAkun();
+  else if (p === 'pengaturan') renderPengaturan();
+}
+
+// ══════════════════════════════════
+// PERIOD
+// ══════════════════════════════════
+function getPeriodStr() {
+  const { bulan, tahun } = DB.pengaturan;
+  return `${bulan} ${tahun}`;
+}
+
+function updatePeriodUI() {
+  const s = getPeriodStr();
+  document.getElementById('topbar-period').textContent = s;
+  document.getElementById('sb-period').textContent = s;
+  document.getElementById('dash-period-sub').textContent = 'Periode ' + s;
+  document.getElementById('d-saldo-period').textContent = s;
+}
+
+// ══════════════════════════════════
+// KATEGORI DROPDOWNS
+// ══════════════════════════════════
+const KATEGORI_KELUAR_MAP = {
+  '🍽️ MAKANAN & MINUMAN': ['Belanja Bahan Makanan / Grocery','Makan di Luar / Restoran','Kopi & Minuman','Snack & Jajanan','Delivery / GoFood / GrabFood'],
+  '🚗 TRANSPORTASI': ['Bensin / BBM','Ojek Online / Taksi','Parkir & Tol','Servis Kendaraan','Transportasi Umum'],
+  '🏠 RUMAH & UTILITAS': ['Sewa / Cicilan KPR','Listrik','Air (PDAM)','Gas / LPG','Internet','Pembantu / ART'],
+  '📱 KOMUNIKASI': ['Pulsa / Paket Data','Telepon Rumah / Wifi','Langganan Streaming'],
+  '🛒 BELANJA KEBUTUHAN': ['Sabun, Shampo, Toiletries','Perlengkapan Rumah','Pakaian & Alas Kaki','Perawatan Diri (Salon/Spa)'],
+  '❤️ KESEHATAN': ['Dokter / Konsultasi','Obat-obatan','Suplemen / Vitamin','Gym / Olahraga'],
+  '🎓 PENDIDIKAN': ['SPP / Sekolah / Kuliah','Kursus / Les / Pelatihan','Buku & Alat Tulis'],
+  '🎉 HIBURAN & REKREASI': ['Bioskop / Konser','Liburan / Wisata','Hobi','Langganan Apps/Games'],
+  '🤝 SOSIAL & SUMBANGAN': ['Arisan','Sumbangan / Donasi / Infak','Hadiah / Kado','Acara Keluarga'],
+  '💳 HUTANG & CICILAN': ['Bayar KPR','Bayar KKB','Bayar KTA','Bayar Kartu Kredit','Bayar Pinjol','Bayar Hutang Teman','Cicilan Lainnya'],
+  '💵 VALAS': ['Beli Valas USD','Beli Valas MYR','Beli Valas SGD','Beli Valas EUR','Beli Valas Lainnya'],
+  '🔧 LAINNYA': ['Tak Terduga / Emergency','Lainnya 1','Lainnya 2'],
+};
+
+const KATEGORI_MASUK_MAP = {
+  '📥 PEMASUKAN': ['Gaji Pokok / Salary','Tunjangan','Bonus / THR','Freelance','Bisnis','Dividen','Transfer Masuk','Refund','Lainnya'],
+  '💵 VALAS (JUAL)': ['Jual Valas USD','Jual Valas MYR','Jual Valas SGD','Jual Valas EUR','Jual Valas Lainnya'],
+};
+
+function populateFormDropdowns() {
+  const jenis = document.getElementById('f-jenis').value;
+  const katSel = document.getElementById('f-kategori');
+  const akunSel = document.getElementById('f-akun');
+
+  katSel.innerHTML = '';
+  const map = jenis === 'Masuk' ? KATEGORI_MASUK_MAP : KATEGORI_KELUAR_MAP;
+  Object.keys(map).forEach(k => { katSel.innerHTML += `<option>${k}</option>`; });
+  updateSubKat();
+
+  akunSel.innerHTML = DB.akun.map(a => `<option>${a.nama}</option>`).join('');
+}
+
+function updateSubKat() {
+  const kat = document.getElementById('f-kategori').value;
+  const jenis = document.getElementById('f-jenis').value;
+  const map = jenis === 'Masuk' ? KATEGORI_MASUK_MAP : KATEGORI_KELUAR_MAP;
+  const subs = map[kat] || [];
+  document.getElementById('f-subkategori').innerHTML = subs.map(s => `<option>${s}</option>`).join('');
+}
+
+// ══════════════════════════════════
+// TRANSAKSI HARIAN
+// ══════════════════════════════════
+function tambahTransaksi() {
+  const tgl = document.getElementById('f-tgl').value;
+  const jenis = document.getElementById('f-jenis').value;
+  const nominal = parseFloat(document.getElementById('f-nominal').value) || 0;
+  const kategori = document.getElementById('f-kategori').value;
+  const sub = document.getElementById('f-subkategori').value;
+  const metode = document.getElementById('f-metode').value;
+  const akun = document.getElementById('f-akun').value;
+  const catatan = document.getElementById('f-catatan').value;
+
+  if (!tgl || nominal <= 0) { showAlert('h-alert', '⚠️ Tanggal dan nominal wajib diisi!', 'info'); return; }
+
+  DB.transaksi.push({ id: Date.now(), tgl, jenis, nominal, kategori, sub, metode, akun, catatan, source: 'manual' });
+  save(DB);
+  renderTransaksi();
+  showAlert('h-alert', '✅ Transaksi berhasil ditambahkan!');
+  document.getElementById('f-nominal').value = '';
+  document.getElementById('f-catatan').value = '';
+}
+
+function hapusTransaksi(id) {
+  if (!confirm('Hapus transaksi ini?')) return;
+  DB.transaksi = DB.transaksi.filter(t => t.id !== id);
+  save(DB); renderTransaksi();
+}
+
+function renderTransaksi() {
+  const filter = document.getElementById('filter-jenis')?.value || '';
+  let list = [...DB.transaksi].sort((a, b) => b.tgl.localeCompare(a.tgl));
+  if (filter) list = list.filter(t => t.jenis === filter);
+
+  const tbody = document.getElementById('tbl-transaksi');
+  if (!tbody) return;
+
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="10"><div class="empty"><div class="empty-icon">📭</div>Belum ada transaksi</div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map((t, i) => `
+    <tr>
+      <td style="color:var(--muted)">${i + 1}</td>
+      <td>${t.tgl}</td>
+      <td><span class="badge badge-${t.jenis === 'Masuk' ? 'in' : 'out'}">${t.jenis}</span>
+        ${t.source === 'hutang' ? '<span class="badge badge-hutang" style="margin-left:4px">hutang</span>' : ''}
+        ${t.source === 'valas' ? '<span class="badge badge-valas" style="margin-left:4px">valas</span>' : ''}
+      </td>
+      <td style="font-size:12px">${t.kategori}</td>
+      <td style="font-size:12px;color:var(--muted)">${t.sub || '—'}</td>
+      <td style="font-size:12px">${t.metode}</td>
+      <td style="font-size:12px">${t.akun}</td>
+      <td style="font-size:12px;color:var(--muted)">${t.catatan || '—'}</td>
+      <td class="num ${t.jenis === 'Masuk' ? 'pos' : 'neg'}">${t.jenis === 'Masuk' ? '+' : '-'}${rp(t.nominal)}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="hapusTransaksi(${t.id})">×</button></td>
+    </tr>`).join('');
+}
+
+// Set today's date on form init
+function initTglForm() {
+  const els = ['f-tgl', 'vf-tgl', 'bm-tgl'];
+  const today = new Date().toISOString().split('T')[0];
+  els.forEach(id => { const el = document.getElementById(id); if (el && !el.value) el.value = today; });
+}
+
+// ══════════════════════════════════
+// PEMASUKAN
+// ══════════════════════════════════
+function realisasiMasukPerSumber(sumber) {
+  return DB.transaksi.filter(t => t.jenis === 'Masuk' && t.sub === sumber).reduce((s, t) => s + t.nominal, 0);
+}
+
+function renderPemasukan() {
+  const tbody = document.getElementById('tbl-pemasukan');
+  tbody.innerHTML = DB.pemasukan.map((p, i) => {
+    const real = realisasiMasukPerSumber(p.sumber);
+    const sel = p.anggaran - real;
+    return `<tr>
+      <td>${p.sumber}</td>
+      <td class="num"><input type="number" value="${p.anggaran}" min="0" onchange="DB.pemasukan[${i}].anggaran=parseFloat(this.value)||0"
+        style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:5px;width:130px;text-align:right;font-family:'Fira Code',monospace;font-size:12px"/></td>
+      <td class="num pos">${rp(real)}</td>
+      <td class="num ${sel >= 0 ? '' : 'neg'}">${rpFull(sel)}</td>
+      <td><input type="text" value="${p.catatan || ''}" placeholder="catatan..." onchange="DB.pemasukan[${i}].catatan=this.value"
+        style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:5px;width:150px;font-size:12px"/></td>
+    </tr>`;
+  }).join('');
+}
+
+function simpanPemasukan() { save(DB); showAlert('p-alert', '✅ Anggaran pemasukan disimpan!'); }
+
+// ══════════════════════════════════
+// PENGELUARAN
+// ══════════════════════════════════
+function realisasiKeluarPerItem(item) {
+  return DB.transaksi.filter(t => t.jenis === 'Keluar' && t.sub === item).reduce((s, t) => s + t.nominal, 0);
+}
+
+function renderPengeluaran() {
+  const tbody = document.getElementById('tbl-pengeluaran');
+  let rows = '', curKat = '';
+  DB.pengeluaran.forEach((p, i) => {
+    const real = realisasiKeluarPerItem(p.item);
+    const sel = p.anggaran - real;
+    const pct = p.anggaran > 0 ? Math.min(100, Math.round(real / p.anggaran * 100)) : 0;
+    const overBudget = real > p.anggaran && p.anggaran > 0;
+    if (p.kat !== curKat) {
+      rows += `<tr style="background:var(--hover)"><td colspan="5" style="font-weight:700;font-size:12px;padding:10px 12px">${p.kat}</td></tr>`;
+      curKat = p.kat;
+    }
+    rows += `<tr>
+      <td style="padding-left:24px;font-size:13px">${p.item}</td>
+      <td class="num"><input type="number" value="${p.anggaran}" min="0" onchange="DB.pengeluaran[${i}].anggaran=parseFloat(this.value)||0"
+        style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:5px;width:130px;text-align:right;font-family:'Fira Code',monospace;font-size:12px"/></td>
+      <td class="num neg">${rp(real)}</td>
+      <td class="num ${sel >= 0 ? '' : 'neg'}">${rpFull(sel)}</td>
+      <td><div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${overBudget ? 'var(--red)' : 'var(--green)'}"></div></div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">${pct}%</div></td>
+    </tr>`;
+  });
+  tbody.innerHTML = rows;
+}
+
+function simpanPengeluaran() { save(DB); showAlert('pe-alert', '✅ Anggaran pengeluaran disimpan!'); }
+
+// ══════════════════════════════════
+// TABUNGAN
+// ══════════════════════════════════
+function renderTabungan() {
+  const tbody = document.getElementById('tbl-tabungan');
+  tbody.innerHTML = DB.tabungan.map((t, i) => `<tr>
+    <td>${t.jenis}</td>
+    <td class="num"><input type="number" value="${t.anggaran}" min="0" onchange="DB.tabungan[${i}].anggaran=parseFloat(this.value)||0"
+      style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:5px;width:120px;text-align:right;font-family:'Fira Code',monospace;font-size:12px"/></td>
+    <td class="num"><input type="number" value="${t.realisasi}" min="0" onchange="DB.tabungan[${i}].realisasi=parseFloat(this.value)||0"
+      style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:5px;width:120px;text-align:right;font-family:'Fira Code',monospace;font-size:12px"/></td>
+    <td class="num"><input type="number" value="${t.akumulatif}" min="0" onchange="DB.tabungan[${i}].akumulatif=parseFloat(this.value)||0"
+      style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:5px;width:120px;text-align:right;font-family:'Fira Code',monospace;font-size:12px"/></td>
+    <td class="num"><input type="number" value="${t.target}" min="0" onchange="DB.tabungan[${i}].target=parseFloat(this.value)||0"
+      style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:5px;width:120px;text-align:right;font-family:'Fira Code',monospace;font-size:12px"/></td>
+    <td><input type="text" value="${t.ket || ''}" placeholder="bank/ket..." onchange="DB.tabungan[${i}].ket=this.value"
+      style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:5px;width:130px;font-size:12px"/></td>
+  </tr>`).join('');
+}
+
+function simpanTabungan() { save(DB); showAlert('pe-alert', '✅ Tabungan disimpan!'); }
+
+// ══════════════════════════════════
+// TABUNGAN VALAS
+// ══════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  // auto-hitung IDR saat input jumlah/kurs valas
+  const jmlInput = document.getElementById('vf-jumlah');
+  const kursInput = document.getElementById('vf-kurs');
+  const idrInput = document.getElementById('vf-idr');
+  const currSel = document.getElementById('vf-currency');
+
+  function autoIdr() {
+    const j = parseFloat(jmlInput.value) || 0;
+    const k = parseFloat(kursInput.value) || 0;
+    if (j > 0 && k > 0) idrInput.value = Math.round(j * k);
+  }
+
+  if (jmlInput) jmlInput.addEventListener('input', autoIdr);
+  if (kursInput) kursInput.addEventListener('input', autoIdr);
+  if (currSel) {
+    currSel.addEventListener('change', () => {
+      const cur = currSel.value;
+      const kurs = DB.valasKurs[cur] || 0;
+      if (kursInput) kursInput.value = kurs;
+      autoIdr();
+    });
+  }
+});
+
+function renderValas() {
+  // Hitung saldo per mata uang
+  const saldo = {};
+  DB.valasTransaksi.forEach(v => {
+    if (!saldo[v.currency]) saldo[v.currency] = 0;
+    if (v.jenis === 'Setor') saldo[v.currency] += v.jumlah;
+    else saldo[v.currency] -= v.jumlah;
+  });
+
+  // KPI
+  let totalIdr = 0;
+  Object.entries(saldo).forEach(([cur, jml]) => {
+    const kurs = DB.valasKurs[cur] || 0;
+    totalIdr += jml * kurs;
+  });
+
+  document.getElementById('v-total-idr').textContent = rp(totalIdr);
+  document.getElementById('v-usd-val').textContent = `$ ${(saldo['USD'] || 0).toFixed(2)}`;
+  document.getElementById('v-usd-idr').textContent = `≈ ${rp((saldo['USD'] || 0) * (DB.valasKurs['USD'] || 0))}`;
+  document.getElementById('v-myr-val').textContent = `RM ${(saldo['MYR'] || 0).toFixed(2)}`;
+  document.getElementById('v-myr-idr').textContent = `≈ ${rp((saldo['MYR'] || 0) * (DB.valasKurs['MYR'] || 0))}`;
+  const lainTotal = Object.entries(saldo)
+    .filter(([c]) => c !== 'USD' && c !== 'MYR')
+    .reduce((s, [c, v]) => s + v * (DB.valasKurs[c] || 0), 0);
+  document.getElementById('v-lain-val').textContent = rp(lainTotal);
+
+  // Kurs form
+  const kursForm = document.getElementById('kurs-form');
+  kursForm.innerHTML = Object.entries(DB.valasKurs).map(([cur, val]) =>
+    `<label class="field">${CURRENCY_FLAG[cur] || '🌐'} ${cur} (Rp/1 ${cur})
+      <input type="number" value="${val}" min="0" onchange="DB.valasKurs['${cur}']=parseFloat(this.value)||0"
+        style="font-family:'Fira Code',monospace"/>
+    </label>`
+  ).join('');
+
+  // Tabel riwayat
+  const tbody = document.getElementById('tbl-valas');
+  const list = [...DB.valasTransaksi].sort((a, b) => b.tgl.localeCompare(a.tgl));
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty"><div class="empty-icon">💵</div>Belum ada transaksi valas</div></td></tr>`;
+  } else {
+    tbody.innerHTML = list.map(v => {
+      const sym = CURRENCY_SYMBOL[v.currency] || '';
+      return `<tr>
+        <td>${v.tgl}</td>
+        <td>${CURRENCY_FLAG[v.currency] || '🌐'} ${v.currency}</td>
+        <td><span class="badge ${v.jenis === 'Setor' ? 'badge-valas' : 'badge-out'}">${v.jenis === 'Setor' ? '💰 Setor' : '💸 Tarik'}</span></td>
+        <td class="num">${sym} ${v.jumlah.toFixed(2)}</td>
+        <td class="num">${rp(v.kurs)}</td>
+        <td class="num ${v.jenis === 'Setor' ? 'neg' : 'pos'}">${v.jenis === 'Setor' ? '-' : '+'}${rp(v.idr)}</td>
+        <td style="font-size:12px;color:var(--muted)">${v.catatan || '—'}</td>
+        <td><button class="btn btn-danger btn-sm" onclick="hapusValas(${v.id})">×</button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Saldo per mata uang
+  const saldoList = document.getElementById('valas-saldo-list');
+  const allCurrencies = Object.keys(saldo).filter(c => saldo[c] !== 0);
+  if (!allCurrencies.length) {
+    saldoList.innerHTML = '<div class="empty" style="padding:20px">Belum ada saldo valas</div>';
+  } else {
+    saldoList.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px">` +
+      allCurrencies.map(cur => {
+        const jml = saldo[cur] || 0;
+        const idr = jml * (DB.valasKurs[cur] || 0);
+        const sym = CURRENCY_SYMBOL[cur] || '';
+        return `<div class="valas-item" style="margin:0">
+          <div class="valas-header">
+            <div class="valas-flag">${CURRENCY_FLAG[cur] || '🌐'}</div>
+            <div class="valas-name">${cur}</div>
+          </div>
+          <div style="font-family:'Fira Code',monospace;font-size:20px;font-weight:700;color:var(--gold)">${sym} ${jml.toFixed(2)}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">≈ ${rp(idr)}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">Kurs: ${rp(DB.valasKurs[cur] || 0)}</div>
+        </div>`;
+      }).join('') + `</div>`;
+  }
+
+  // Init tanggal form valas
+  const vTgl = document.getElementById('vf-tgl');
+  if (vTgl && !vTgl.value) vTgl.value = new Date().toISOString().split('T')[0];
+}
+
+function tambahValas() {
+  const tgl = document.getElementById('vf-tgl').value;
+  const currency = document.getElementById('vf-currency').value;
+  const jenis = document.getElementById('vf-jenis').value;
+  const jumlah = parseFloat(document.getElementById('vf-jumlah').value) || 0;
+  const kurs = parseFloat(document.getElementById('vf-kurs').value) || 0;
+  const idr = parseFloat(document.getElementById('vf-idr').value) || Math.round(jumlah * kurs);
+  const catatan = document.getElementById('vf-catatan').value;
+
+  if (!tgl || jumlah <= 0) { showAlert('vf-alert', '⚠️ Tanggal dan jumlah valas wajib diisi!', 'info'); return; }
+  if (idr <= 0) { showAlert('vf-alert', '⚠️ Nilai IDR tidak boleh 0. Masukkan kurs!', 'info'); return; }
+
+  const id = Date.now();
+
+  // Simpan ke valas transaksi
+  DB.valasTransaksi.push({ id, tgl, currency, jenis, jumlah, kurs, idr, catatan });
+
+  // Otomatis catat ke Transaksi Harian
+  const jenisTransaksi = jenis === 'Setor' ? 'Keluar' : 'Masuk'; // Setor valas = uang keluar dari BCA
+  const katValas = jenis === 'Setor' ? '💵 VALAS' : '💵 VALAS (JUAL)';
+  const subValas = jenis === 'Setor' ? `Beli Valas ${currency}` : `Jual Valas ${currency}`;
+  const sym = CURRENCY_SYMBOL[currency] || '';
+  const catatanAuto = `${jenis} ${currency} ${sym}${jumlah.toFixed(2)} @ ${rp(kurs)}${catatan ? ' — ' + catatan : ''}`;
+
+  DB.transaksi.push({
+    id: id + 1,
+    tgl,
+    jenis: jenisTransaksi,
+    nominal: idr,
+    kategori: katValas,
+    sub: subValas,
+    metode: 'Transfer Bank',
+    akun: 'BCA',
+    catatan: catatanAuto,
+    source: 'valas',
+    valasId: id,
+  });
+
+  save(DB);
+  renderValas();
+  showAlert('vf-alert', `✅ Transaksi valas ${currency} berhasil dicatat & tercermin di Transaksi Harian!`);
+  document.getElementById('vf-jumlah').value = '';
+  document.getElementById('vf-idr').value = '';
+  document.getElementById('vf-catatan').value = '';
+}
+
+function hapusValas(id) {
+  if (!confirm('Hapus transaksi valas ini? Transaksi terkait di Harian juga akan dihapus.')) return;
+  DB.valasTransaksi = DB.valasTransaksi.filter(v => v.id !== id);
+  DB.transaksi = DB.transaksi.filter(t => t.valasId !== id);
+  save(DB); renderValas();
+}
+
+function simpanKurs() {
+  save(DB);
+  showAlert('kurs-alert', '✅ Kurs referensi disimpan!');
+  renderValas();
+}
+
+// ══════════════════════════════════
+// INVESTASI
+// ══════════════════════════════════
+function renderInvestasi() {
+  const tbody = document.getElementById('tbl-investasi');
+  tbody.innerHTML = DB.investasi.map((inv, i) => {
+    const ret = (inv.modal + inv.tambahan) > 0
+      ? (((inv.nilaiSkrg - (inv.modal + inv.tambahan)) / (inv.modal + inv.tambahan)) * 100).toFixed(1)
+      : 0;
+    const retColor = ret >= 0 ? 'var(--green)' : 'var(--red)';
+    return `<tr>
+      <td>${inv.instrumen}</td>
+      <td class="num"><input type="number" value="${inv.modal}" min="0" onchange="DB.investasi[${i}].modal=parseFloat(this.value)||0;renderInvestasi()"
+        style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:5px;width:120px;text-align:right;font-family:'Fira Code',monospace;font-size:12px"/></td>
+      <td class="num"><input type="number" value="${inv.tambahan}" min="0" onchange="DB.investasi[${i}].tambahan=parseFloat(this.value)||0;renderInvestasi()"
+        style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:5px;width:120px;text-align:right;font-family:'Fira Code',monospace;font-size:12px"/></td>
+      <td class="num"><input type="number" value="${inv.nilaiSkrg}" min="0" onchange="DB.investasi[${i}].nilaiSkrg=parseFloat(this.value)||0;renderInvestasi()"
+        style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:5px;width:120px;text-align:right;font-family:'Fira Code',monospace;font-size:12px"/></td>
+      <td class="num" style="color:${retColor};font-weight:600">${ret}%</td>
+      <td><input type="text" value="${inv.platform || ''}" placeholder="platform..." onchange="DB.investasi[${i}].platform=this.value"
+        style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:5px;width:120px;font-size:12px"/></td>
+    </tr>`;
+  }).join('');
+}
+
+function simpanInvestasi() { save(DB); showAlert('pe-alert', '✅ Investasi disimpan!'); }
+
+// ══════════════════════════════════
+// HUTANG (DINAMIS)
+// ══════════════════════════════════
+function renderHutang() {
+  // Init akun dropdown
+  document.getElementById('hf-akun').innerHTML = akunOptions('BCA');
+
+  let totalHutang = 0, totalBayar = 0, aktif = 0;
+  DB.hutang.forEach(h => {
+    totalHutang += h.total;
+    totalBayar += h.terbayar || 0;
+    if ((h.total - (h.terbayar || 0)) > 0) aktif++;
+  });
+
+  document.getElementById('h-total').textContent = rp(totalHutang);
+  document.getElementById('h-bayar').textContent = rp(totalBayar);
+  document.getElementById('h-sisa').textContent = rp(totalHutang - totalBayar);
+  document.getElementById('h-count').textContent = aktif;
+
+  const listEl = document.getElementById('hutang-list');
+  if (!DB.hutang.length) {
+    listEl.innerHTML = '<div class="empty"><div class="empty-icon">🎉</div>Belum ada hutang dicatat</div>';
+    return;
+  }
+
+  listEl.innerHTML = DB.hutang.map(h => {
+    const sisa = h.total - (h.terbayar || 0);
+    const pct = h.total > 0 ? Math.min(100, Math.round(((h.terbayar || 0) / h.total) * 100)) : 0;
+    const lunas = sisa <= 0;
+
+    return `<div class="hutang-item">
+      <div class="hutang-item-header">
+        <div>
+          <div class="hutang-item-name">${h.nama}</div>
+          ${h.ket ? `<div style="font-size:12px;color:var(--muted);margin-top:2px">${h.ket}</div>` : ''}
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          ${lunas
+            ? `<span class="badge badge-in" style="font-size:12px">✅ LUNAS</span>`
+            : `<button class="btn btn-success btn-sm" onclick="bukaModalBayar(${h.id})">💸 Catat Bayar</button>`
+          }
+          <button class="btn btn-danger btn-sm" onclick="hapusHutang(${h.id})">🗑️</button>
+        </div>
+      </div>
+      <div class="hutang-progress-bar">
+        <div class="hutang-progress-fill" style="width:${pct}%;background:${lunas ? 'var(--green)' : 'var(--red)'}"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:8px">
+        <span>Sudah dibayar ${pct}%</span>
+        <span>${lunas ? 'LUNAS' : `Sisa: <strong style="color:var(--red)">${rp(sisa)}</strong>`}</span>
+      </div>
+      <div class="hutang-stats">
+        <div class="hutang-stat">Total awal: <span>${rp(h.total)}</span></div>
+        <div class="hutang-stat">Sudah bayar: <span style="color:var(--green)">${rp(h.terbayar || 0)}</span></div>
+        <div class="hutang-stat">Cicilan/bln: <span>${rp(h.anggaranBayar)}</span></div>
+        ${h.bunga > 0 ? `<div class="hutang-stat">Bunga: <span>${h.bunga}% / thn</span></div>` : ''}
+        <div class="hutang-stat">Akun bayar: <span>${h.akunBayar}</span></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function tambahHutang() {
+  const nama = document.getElementById('hf-nama').value.trim();
+  const total = parseFloat(document.getElementById('hf-total').value) || 0;
+  const cicilan = parseFloat(document.getElementById('hf-cicilan').value) || 0;
+  const bunga = parseFloat(document.getElementById('hf-bunga').value) || 0;
+  const akun = document.getElementById('hf-akun').value;
+  const ket = document.getElementById('hf-ket').value.trim();
+
+  if (!nama) { showAlert('hf-alert', '⚠️ Nama hutang wajib diisi!', 'info'); return; }
+  if (total <= 0) { showAlert('hf-alert', '⚠️ Total hutang harus lebih dari 0!', 'info'); return; }
+
+  const newId = Date.now();
+  DB.hutang.push({ id: newId, nama, total, terbayar: 0, anggaranBayar: cicilan, bunga, akunBayar: akun, ket });
+  save(DB);
+  renderHutang();
+  showAlert('hf-alert', `✅ Hutang "${nama}" berhasil ditambahkan!`);
+
+  document.getElementById('hf-nama').value = '';
+  document.getElementById('hf-total').value = '';
+  document.getElementById('hf-cicilan').value = '';
+  document.getElementById('hf-bunga').value = '';
+  document.getElementById('hf-ket').value = '';
+}
+
+function hapusHutang(id) {
+  const h = DB.hutang.find(x => x.id === id);
+  if (!h) return;
+  if (!confirm(`Hapus hutang "${h.nama}"? Riwayat pembayaran terkait di Transaksi Harian akan tetap ada.`)) return;
+  DB.hutang = DB.hutang.filter(x => x.id !== id);
+  save(DB); renderHutang();
+}
+
+function bukaModalBayar(hutangId) {
+  _bayarHutangId = hutangId;
+  const h = DB.hutang.find(x => x.id === hutangId);
+  if (!h) return;
+  const sisa = h.total - (h.terbayar || 0);
+  document.getElementById('bayar-nama').textContent = `Hutang: ${h.nama} | Sisa: ${rp(sisa)}`;
+  document.getElementById('bm-nominal').value = h.anggaranBayar || '';
+  document.getElementById('bm-akun').innerHTML = akunOptions(h.akunBayar || 'BCA');
+  const bmTgl = document.getElementById('bm-tgl');
+  bmTgl.value = new Date().toISOString().split('T')[0];
+  document.getElementById('bm-catatan').value = '';
+  document.getElementById('bm-alert').innerHTML = '';
+  const modal = document.getElementById('bayar-modal');
+  modal.style.display = 'flex';
+}
+
+function tutupModalBayar() {
+  document.getElementById('bayar-modal').style.display = 'none';
+  _bayarHutangId = null;
+}
+
+function konfirmasiBayar() {
+  const h = DB.hutang.find(x => x.id === _bayarHutangId);
+  if (!h) return;
+
+  const tgl = document.getElementById('bm-tgl').value;
+  const nominal = parseFloat(document.getElementById('bm-nominal').value) || 0;
+  const akun = document.getElementById('bm-akun').value;
+  const catatan = document.getElementById('bm-catatan').value;
+
+  if (!tgl || nominal <= 0) { showAlert('bm-alert', '⚠️ Tanggal dan nominal wajib diisi!', 'info'); return; }
+
+  const sisa = h.total - (h.terbayar || 0);
+  if (nominal > sisa) { showAlert('bm-alert', `⚠️ Bayar melebihi sisa hutang (${rp(sisa)})!`, 'info'); return; }
+
+  // Update terbayar
+  h.terbayar = (h.terbayar || 0) + nominal;
+
+  // Otomatis catat ke Transaksi Harian
+  const id = Date.now();
+  DB.transaksi.push({
+    id,
+    tgl,
+    jenis: 'Keluar',
+    nominal,
+    kategori: '💳 HUTANG & CICILAN',
+    sub: `Bayar ${h.nama}`,
+    metode: 'Transfer Bank',
+    akun,
+    catatan: `Bayar hutang: ${h.nama}${catatan ? ' — ' + catatan : ''}`,
+    source: 'hutang',
+    hutangId: h.id,
+  });
+
+  save(DB);
+  tutupModalBayar();
+  renderHutang();
+  showAlert('hf-alert', `✅ Pembayaran ${rp(nominal)} untuk "${h.nama}" dicatat & tercermin di Transaksi Harian!`);
+}
+
+// ══════════════════════════════════
+// AKUN & REKENING
+// ══════════════════════════════════
+function getSaldoAkun(namaAkun) {
+  const akun = DB.akun.find(a => a.nama === namaAkun);
+  const saldoAwal = akun ? akun.saldoAwal : 0;
+  const masuk = DB.transaksi.filter(t => t.akun === namaAkun && t.jenis === 'Masuk').reduce((s, t) => s + t.nominal, 0);
+  const keluar = DB.transaksi.filter(t => t.akun === namaAkun && t.jenis === 'Keluar').reduce((s, t) => s + t.nominal, 0);
+  return saldoAwal + masuk - keluar;
+}
+
+function renderAkun() {
+  const grid = document.getElementById('rek-grid');
+  const formRows = document.getElementById('akun-form-rows');
+
+  grid.innerHTML = DB.akun.map(a => {
+    const saldo = getSaldoAkun(a.nama);
+    return `<div class="rek-card">
+      <div class="rek-name">${a.nama}</div>
+      <div class="rek-saldo ${saldo >= 0 ? '' : 'neg'}">${rpFull(saldo)}</div>
+      <div class="rek-note">saldo saat ini</div>
+    </div>`;
+  }).join('');
+
+  formRows.innerHTML = DB.akun.map((a, i) => `
+    <div class="akun-row">
+      <label class="field" style="flex:0 0 160px;font-weight:600;color:var(--text);font-size:13px;justify-content:center">${a.nama}</label>
+      <label class="field"><span>Saldo Awal (Rp)</span>
+        <input type="number" value="${a.saldoAwal}" min="0" onchange="DB.akun[${i}].saldoAwal=parseFloat(this.value)||0;renderAkun()" style="width:180px"/>
+      </label>
+      <div style="font-size:12px;color:var(--muted);align-self:flex-end;padding-bottom:9px">
+        Saldo sekarang: <strong style="color:var(--green)">${rp(getSaldoAkun(a.nama))}</strong>
+      </div>
+    </div>`).join('');
+}
+
+function simpanAkun() { save(DB); showAlert('a-alert', '✅ Saldo awal disimpan!'); renderAkun(); }
+
+// ══════════════════════════════════
+// PENGATURAN
+// ══════════════════════════════════
+function renderPengaturan() {
+  const { bulan, tahun, nama } = DB.pengaturan;
+  document.getElementById('s-bulan').value = bulan;
+  document.getElementById('s-tahun').value = tahun;
+  document.getElementById('s-nama').value = nama;
+}
+
+function simpanPengaturan() {
+  DB.pengaturan.bulan = document.getElementById('s-bulan').value;
+  DB.pengaturan.tahun = parseInt(document.getElementById('s-tahun').value) || 2025;
+  DB.pengaturan.nama = document.getElementById('s-nama').value;
+  save(DB); updatePeriodUI();
+  showAlert('s-alert', '✅ Pengaturan disimpan!');
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(DB, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `keuangan_${DB.pengaturan.bulan}_${DB.pengaturan.tahun}.json`;
+  a.click();
+}
+
+function resetData() {
+  if (confirm('⚠️ Semua data akan dihapus! Lanjutkan?')) {
+    DB = JSON.parse(JSON.stringify(DEFAULT));
+    save(DB); goto('dashboard'); updatePeriodUI();
+  }
+}
+
+// ══════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════
+function renderDashboard() {
+  const totalMasuk = DB.transaksi.filter(t => t.jenis === 'Masuk').reduce((s, t) => s + t.nominal, 0);
+  const totalKeluar = DB.transaksi.filter(t => t.jenis === 'Keluar').reduce((s, t) => s + t.nominal, 0);
+  const nMasuk = DB.transaksi.filter(t => t.jenis === 'Masuk').length;
+  const nKeluar = DB.transaksi.filter(t => t.jenis === 'Keluar').length;
+  const saldoBersih = totalMasuk - totalKeluar;
+  const totalSaldoAkun = DB.akun.reduce((s, a) => s + getSaldoAkun(a.nama), 0);
+  const totalHutang = DB.hutang.reduce((s, h) => s + (h.total - (h.terbayar || 0)), 0);
+
+  // Total valas dalam IDR
+  const saldoValas = {};
+  DB.valasTransaksi.forEach(v => {
+    if (!saldoValas[v.currency]) saldoValas[v.currency] = 0;
+    if (v.jenis === 'Setor') saldoValas[v.currency] += v.jumlah;
+    else saldoValas[v.currency] -= v.jumlah;
+  });
+  const totalValasIdr = Object.entries(saldoValas).reduce((s, [c, v]) => s + v * (DB.valasKurs[c] || 0), 0);
+
+  document.getElementById('d-masuk').textContent = rp(totalMasuk);
+  document.getElementById('d-keluar').textContent = rp(totalKeluar);
+  document.getElementById('d-masuk-n').textContent = nMasuk + ' transaksi';
+  document.getElementById('d-keluar-n').textContent = nKeluar + ' transaksi';
+  document.getElementById('d-saldo-akun').textContent = rp(totalSaldoAkun);
+  document.getElementById('d-hutang').textContent = rp(totalHutang);
+  document.getElementById('d-valas').textContent = rp(totalValasIdr);
+
+  const sb = document.getElementById('d-saldo-bersih');
+  sb.textContent = rpFull(saldoBersih);
+  sb.style.color = saldoBersih >= 0 ? 'var(--green)' : 'var(--red)';
+
+  // Donut pengeluaran per kategori
+  const katMap = {};
+  DB.transaksi.filter(t => t.jenis === 'Keluar').forEach(t => {
+    const k = t.kategori || '🔧 LAINNYA';
+    katMap[k] = (katMap[k] || 0) + t.nominal;
+  });
+  const donutColors = ['#2dd98f','#ff5c7a','#4d9fff','#ffb830','#9b7ff4','#2dd9c8','#ff9f40','#f06292'];
+  const entries = Object.entries(katMap).sort((a, b) => b[1] - a[1]);
+  renderDonut('d-donut', 'd-donut-legend', entries, donutColors);
+
+  // Rekening saldo
+  const rekEl = document.getElementById('d-rek-list');
+  rekEl.innerHTML = DB.akun.map(a => {
+    const s = getSaldoAkun(a.nama);
+    return `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px">
+      <span style="color:var(--muted)">${a.nama}</span>
+      <span style="font-family:'Fira Code',monospace;font-weight:600;color:${s >= 0 ? 'var(--green)' : 'var(--red)'}">${rpFull(s)}</span>
+    </div>`;
+  }).join('') || '<div class="empty" style="padding:16px">Belum ada saldo</div>';
+
+  // Recent transaksi
+  const recent = [...DB.transaksi].sort((a, b) => b.tgl.localeCompare(a.tgl)).slice(0, 8);
+  const rEl = document.getElementById('d-recent');
+  rEl.innerHTML = recent.length ? recent.map(t => `<tr>
+    <td style="font-size:12px;color:var(--muted)">${t.tgl}</td>
+    <td style="font-size:12px">${t.sub || t.kategori}</td>
+    <td style="font-size:11px;color:var(--muted)">${t.kategori}</td>
+    <td style="font-size:12px">${t.akun}</td>
+    <td class="num ${t.jenis === 'Masuk' ? 'pos' : 'neg'}">${t.jenis === 'Masuk' ? '+' : '-'}${rp(t.nominal)}</td>
+  </tr>`).join('') : `<tr><td colspan="5"><div class="empty"><div class="empty-icon">📭</div>Belum ada transaksi</div></td></tr>`;
+}
+
+// ══════════════════════════════════
+// DONUT SVG HELPER
+// ══════════════════════════════════
+function renderDonut(svgId, legendId, entries, colors) {
+  const svg = document.getElementById(svgId);
+  const legend = document.getElementById(legendId);
+  const total = entries.reduce((s, e) => s + e[1], 0);
+  if (!total || !entries.length) {
+    svg.innerHTML = `<circle cx="70" cy="70" r="55" fill="none" stroke="var(--border)" stroke-width="20"/><text x="70" y="75" text-anchor="middle" font-size="11" fill="var(--muted)">Kosong</text>`;
+    legend.innerHTML = '';
+    return;
+  }
+  let offset = -90, paths = '', legendHTML = '';
+  const r = 55, cx = 70, cy = 70;
+  const toRad = d => d * Math.PI / 180;
+
+  entries.forEach(([name, val], i) => {
+    const pct = val / total;
+    const angle = pct * 360;
+    const x1 = cx + r * Math.cos(toRad(offset));
+    const y1 = cy + r * Math.sin(toRad(offset));
+    const x2 = cx + r * Math.cos(toRad(offset + angle));
+    const y2 = cy + r * Math.sin(toRad(offset + angle));
+    const large = angle > 180 ? 1 : 0;
+    const col = colors[i % colors.length];
+
+    paths += `<path d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large},1 ${x2},${y2} Z" fill="${col}" opacity="0.9"/>`;
+    legendHTML += `<div class="donut-item">
+      <div class="donut-dot" style="background:${col}"></div>
+      <div class="donut-name">${name.replace(/^[^\s]+ /, '')}</div>
+      <div class="donut-amt">${rp(val)}</div>
+    </div>`;
+    offset += angle;
+  });
+
+  // Hole
+  paths += `<circle cx="${cx}" cy="${cy}" r="35" fill="var(--card)"/>`;
+  paths += `<text x="${cx}" y="${cy - 6}" text-anchor="middle" font-size="9" fill="var(--muted)">Total</text>`;
+  paths += `<text x="${cx}" y="${cy + 8}" text-anchor="middle" font-size="10" fill="var(--text)" font-weight="600">${rp(total).replace('Rp ', '')}</text>`;
+
+  svg.innerHTML = paths;
+  legend.innerHTML = legendHTML;
+}
+
+// ══════════════════════════════════
+// INIT
+// ══════════════════════════════════
+updatePeriodUI();
+populateFormDropdowns();
+initTglForm();
+renderDashboard();
+</script>
+</body>
+</html>
